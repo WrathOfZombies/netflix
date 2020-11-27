@@ -1,0 +1,143 @@
+/**
+ * Global styles
+ */
+html, body {
+  background: #141414;
+  color: #fff;
+  font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;
+}
+
+/**
+ * The gallery container.
+ *
+ * It wraps all the rows and boxshots.
+ */
+.gallery {
+  width: 1280px;
+  margin: 0 auto;
+}
+
+
+/**
+ * Video Row Container.
+ *
+ * We stack each row on top of each other in the gallery. Inside we place the image boxshots.
+ */
+.row-videos {
+  margin: 10px 0;
+}
+
+
+/**
+ * Video boxshot.
+ *
+ * The actual image for a video
+ */
+.boxshot {
+  width: 253px;
+  height: 142px;
+  margin-right: 3px;
+}
+
+.boxshot:last-child {
+  margin-right: 0;
+}
+
+
+/**
+ * Billboard Row Container.
+ *
+ * Container for the billboard image and metadata block.
+ */
+.row-billboard {
+  position: relative;
+}
+
+/**
+ * Billboard Background Image.
+ *
+ * The actual image element for the billboard.
+ */
+.billboard-background {
+  width: 1280px;
+  height: 720px;
+}
+
+/**
+ * Billboard Metadata Container.
+ *
+ * Contains the logo, synopsis and action buttons.
+ */
+.billboard-metadata {
+  position: absolute;
+  top: 80px;
+  left: 80px;
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition: opacity 1s, transform 1s;
+}
+
+/**
+ * Billboard Metadata Container Visibility.
+ *
+ * When we have an inline billboard, we don't display the metadata container until
+ * it's in the viewport. This CSS class takes care of keeping it hidden.
+ *
+ * Removing it will set opacity to 1 with a transition.
+ */
+.billboard-metadata.hidden {
+  opacity: 0;
+  transform: translate3d(10px, 0, 0);
+}
+
+/**
+ * Logo element
+ */
+.billboard-metadata-logo {
+  display: block;
+}
+
+/**
+ * Synopsis Text
+ */
+.billboard-metadata-synopsis {
+  max-width: 500px;
+  font-size: 20px;
+  margin: 20px 0;
+}
+
+/**
+ * Metadata Buttons
+ */
+.billboard-metadata-button {
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin: 20px 15px 0 0;
+  padding: 10px 25px;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.4);
+  box-shadow: 0 1px 2px rgba(0,0,0,.3);
+  background-color: rgba(0,0,0,.4);
+}
+
+/**
+ * Special Red Play Metadata Button
+ */
+.billboard-metadata-button-play {
+    background-color: #ff0a16;
+    border-color: #ff0a16;
+}
+
+/**
+ * Custom inline billboard
+ */
+.row-billboard-inline .billboard-background {
+  height: 192px;
+}
+
+.row-billboard-inline .billboard-metadata {
+  top: 15px;
+  right: 50px;
+  left: auto;
+}
