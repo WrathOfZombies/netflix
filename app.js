@@ -1,2 +1,1 @@
-export function render(data) {
-};
+export function render(data) {}
