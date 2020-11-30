@@ -1,7 +1,7 @@
-import { first, kebabCase } from "./_.js";
+import { removeChildren, kebabCase } from "./_.js";
 
-export const Component = (componentFn, style, template) => {
-  const tag = kebabCase(componentFn);
+export const Component = (constructor, style, template) => {
+  const tag = kebabCase(constructor);
   if (customElements.get(tag)) {
     throw new Error(`A component with the tag: ${tag}, was already defined.`);
   }
@@ -9,37 +9,42 @@ export const Component = (componentFn, style, template) => {
   customElements.define(
     tag,
     class extends HTMLElement {
-      eventHandlers = new Map();
-      bindTargets = new Set();
+      eventTargets = Array();
 
       constructor() {
         super();
         this.attachShadow({ mode: "open" });
-        // Persist some details of the component
-        this.name = componentFn.name;
+        this.name = tag;
 
         // Create a state and hook up the state updator
         // to the component lifecycle
-        const [getState, updateState] = createState();
-        this.getState = getState;
-        this.component = componentFn(updateState);
-
-        this.renderStyle();
-        this.render();
+        this.component = Reflect.construct(
+          constructor,
+          createState(this.onStateChanged)
+        );
       }
+
+      onStateChanged = (state) => {
+        console.log("State has changed!", state);
+        this.render();
+      };
 
       connectedCallback() {
         console.log("Custom square element added to page.");
         this.component.onMount(parseAttributes(this));
+        this.render();
       }
 
       disconnectedCallback() {
         console.log("Custom square element removed from page.");
+        this.removeEventHandlers();
         this.component.onUnmount();
+        this.component = null;
       }
 
       adoptedCallback() {
         console.log("Custom square element moved to new page.");
+        this.render();
       }
 
       attributeChangedCallback(name, oldValue) {
@@ -51,36 +56,73 @@ export const Component = (componentFn, style, template) => {
         });
       }
 
+      attachEventHandler(target, event, handler) {
+        if (!this.eventTargets) {
+          this.eventTargets = [];
+        }
+        target.addEventListener(event, handler);
+        this.eventTargets.push([target, { event, handler }]);
+      }
+
+      removeEventHandlers() {
+        if (!this.eventTargets) {
+          return;
+        }
+        while (this.eventTargets.length) {
+          const [target, { event, handler }] = this.eventTargets.pop();
+          target.removeEventListener(event, handler);
+        }
+        this.eventTargets = null;
+      }
+
       render() {
-        const compliledTemplate = compile(template);
-        this.shadowRoot.appendChild(compliledTemplate);
-        this.identifyBindings();
-      }
-
-      renderStyle() {
         const styleTag = document.createElement("style");
-        styleTag.textContent = style;
+        styleTag.textContent = this.component.renderStyle();
+        const template = this.component.render();
+
+        if (template === this.previousResult) {
+          return;
+        }
+
+        this.previousResult = template;
+        const compliledTemplate = compile(template);
+
+        removeChildren(this.shadowRoot);
         this.shadowRoot.appendChild(styleTag);
-        this.shadowStyleRoot = this.shadowRoot.children[0];
+        this.shadowRoot.appendChild(compliledTemplate);
+        this.processEventBindings();
       }
 
-      identifyBindings() {
+      processEventBindings() {
+        this.removeEventHandlers();
+
+        // Let's do some DFS
         const nodes = new Array();
-        nodes.push(this.shadowRoot);
+        if (this.shadowRoot.childElementCount) {
+          nodes.push(...Array.from(this.shadowRoot.children));
+        }
 
         while (nodes.length) {
+          // Pop the top of the stack in our DFS
           const top = nodes.pop();
 
           if (top.nodeType === this.ELEMENT_NODE) {
-            // Array.from(top.attributes).forEach(({ name, value }) => {
-            //   if (name.startsWith)
-            // });
+            Array.from(top.attributes).forEach(({ name, value }) => {
+              // if an attrbute starts with @
+              if (/^@/.test(name)) {
+                const [, event] = name.split("@");
+                const handler = this.component[value];
+                if (handler) {
+                  this.attachEventHandler(top, event, handler);
+                }
+              }
+            });
 
-            if (top.childNodes) {
-              nodes = nodes.concat(Array.from(top.childNodes));
+            // If the node has element children
+            // Then dive deeper
+            if (top.childElementCount) {
+              nodes.push(...Array.from(top.children));
             }
-          } else if (top.nodeType === this.TEXT_NODE) {
-            top.textContent = compileText(top.textContent, this.getState());
           }
         }
       }
@@ -141,102 +183,24 @@ const compile = (template) => {
   return templateNode.content.cloneNode(true);
 };
 
-const createState = () => {
-  let state;
+const createState = (onStateChanged) => {
+  let state = {};
 
   const currentState = () => state;
 
-  const stateUpdater = (newStateOrCallback) => {
-    if (typeof newStateOrCallback === "function") {
-      const newState = newStateOrCallback(state);
+  const stateUpdater = (value) => {
+    if (typeof value === "function") {
+      const newState = value(state);
       if (newState === state) {
         return;
       }
       state = { ...state, ...newState };
     } else {
-      state = { ...state, ...newStateOrCallback };
+      state = { ...state, ...value };
     }
-
+    onStateChanged(state);
     return state;
   };
 
   return [currentState, stateUpdater];
-};
-
-const hasInterpolation = (element) => {
-  if (element.nodeType !== this.textContent) return false;
-
-  const regex = /\{\{.*?\}\}/gim;
-  return regex.test(element.textContent);
-};
-
-const compileText = (str, data) => {
-  if (!hasInterpolation) return false;
-
-  let resultArray = [];
-
-  for (let pos = 0, length = str.length - 1; pos < length; pos++) {
-    let currentChar = str[pos];
-    let nextChar = str[pos + 1];
-
-    if (currentChar == undefined) {
-      break;
-    }
-
-    // If we don't find an interpolation, keep parsing
-    if (!(currentChar === "{" && nextChar === "{")) {
-      resultArray.push(currentChar);
-      continue;
-    }
-
-    let propertyBuffer = [];
-    // start the property buffer in the inner region of the braces
-    pos += 2;
-
-    // keep moving right and push the characters into the
-    // property buffer
-    do {
-      currentChar = str[pos];
-      nextChar = str[pos + 1];
-
-      // If you find a damaged interpolation
-      // set the position to the nextChar and merge the property buffer
-      // into the results array
-      if (
-        // you find a recurrsive interpolation
-        (currentChar === "{" && nextChar === "{") ||
-        // you find a non matching pairs of closing braces
-        ((currentChar === "}" || nextChar === "}") && currentChar !== nextChar)
-      ) {
-        // flush the property buffer into result array as
-        // the string cannot be interpolated
-        resultArray = resultArray.concat(propertyBuffer);
-        // include the damaged characters
-        resultArray.push(currentChar);
-        resultArray.push(nextChar);
-        // move the pointer to outside the identified region
-        // to continue outer loop
-        pos += 2;
-        break;
-      }
-
-      // yay we found a closing matching braces
-      if (currentChar === "}" && nextChar === "}") {
-        // merge the interpolated result into the compiled string
-        const property = propertyBuffer.join("");
-        resultArray = resultArray.concat(`${data[property]}`.split(""));
-
-        // move the pointer to outside the identified region
-        // to continue outer loop
-        pos += 2;
-        break;
-      }
-
-      // move the cursor forward
-      propertyBuffer.push(currentChar);
-      pos++;
-    } while (currentChar !== "}" && nextChar !== "}");
-  }
-
-  return resultArray.join("");
 };

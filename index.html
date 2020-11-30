@@ -7,12 +7,30 @@
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <h1>Heading 1</h1>
-    <netflix-app user="Bhargav Krishna"></netflix-app>
+    <button id="addme">Add me</button>
+    <button id="removeme">Remove me</button>
+
     <script type="module">
       import { render } from "./app.js";
       import { data } from "./data.js";
+
       document.addEventListener("DOMContentLoaded", (event) => render(data));
+
+      var id = 0;
+
+      document.querySelector("#addme").addEventListener("click", () => {
+        id++;
+        const user = document.createElement("netflix-app");
+        user.setAttribute("user", `User ${id}`);
+        document.body.appendChild(user);
+      });
+
+      document.querySelector("#removeme").addEventListener("click", () => {
+        const user = document.querySelector("netflix-app");
+        if (user) {
+          user.remove();
+        }
+      });
     </script>
   </body>
 </html>

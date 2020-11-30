@@ -20,6 +20,9 @@ export const kebabCase = (componentFn) => {
 
 export const first = (arr) => {
   if (arr == null) return undefined;
+  if (arr instanceof Set || arr instanceof Map) {
+    return Array.from(arr.values())[0];
+  }
   return arr[0];
 };
 
@@ -39,4 +42,11 @@ const _isKebabBreakpoint = (char, previousChar) => {
     return true;
   }
   return isUpper(char);
+};
+
+export const removeChildren = (parent) => {
+  while (parent.firstChild) {
+    parent.removeChild(parent.firstChild);
+  }
+  parent.innerHTML = "";
 };
