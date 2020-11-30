@@ -7,13 +7,12 @@
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
+    <h1>Heading 1</h1>
+    <netflix-app user="Bhargav Krishna"></netflix-app>
     <script type="module">
       import { render } from "./app.js";
       import { data } from "./data.js";
-
-      document.addEventListener("DOMContentLoaded", function (event) {
-        render(data);
-      });
+      document.addEventListener("DOMContentLoaded", (event) => render(data));
     </script>
   </body>
 </html>

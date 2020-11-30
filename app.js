@@ -1,1 +1,3 @@
-export function render(data) {}
+import "./components/app.js";
+
+export function render(data, host) {}
