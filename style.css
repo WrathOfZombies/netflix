@@ -139,3 +139,7 @@ body {
   right: 50px;
   left: auto;
 }
+
+h1 {
+  color: cyan;
+}
