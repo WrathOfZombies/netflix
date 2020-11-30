@@ -1,4 +1,4 @@
-import { kebabCase } from "./_.js";
+import { first, kebabCase } from "./_.js";
 
 export const Component = (componentFn, style, template) => {
   const tag = kebabCase(componentFn);
@@ -9,13 +9,12 @@ export const Component = (componentFn, style, template) => {
   customElements.define(
     tag,
     class extends HTMLElement {
-      eventHandlers = new WeakMap();
-      bindTargets = new WeakMap();
+      eventHandlers = new Map();
+      bindTargets = new Set();
 
       constructor() {
         super();
         this.attachShadow({ mode: "open" });
-
         // Persist some details of the component
         this.name = componentFn.name;
 
@@ -31,7 +30,7 @@ export const Component = (componentFn, style, template) => {
 
       connectedCallback() {
         console.log("Custom square element added to page.");
-        this.component.onMount(parseAttributes(this.attributes));
+        this.component.onMount(parseAttributes(this));
       }
 
       disconnectedCallback() {
@@ -45,8 +44,9 @@ export const Component = (componentFn, style, template) => {
 
       attributeChangedCallback(name, oldValue) {
         console.log("Custom square element attributes changed.");
-        this.component.onProps(parseAttributes(this.attributes), {
-          ...parseAttributes(this.attributes),
+        const newProps = parseAttributes(this);
+        this.component.onProps(newProps, {
+          ...newProps,
           ...parseAttribute({ name, value: oldValue }),
         });
       }
@@ -54,12 +54,35 @@ export const Component = (componentFn, style, template) => {
       render() {
         const compliledTemplate = compile(template);
         this.shadowRoot.appendChild(compliledTemplate);
+        this.identifyBindings();
       }
 
       renderStyle() {
         const styleTag = document.createElement("style");
         styleTag.textContent = style;
         this.shadowRoot.appendChild(styleTag);
+        this.shadowStyleRoot = this.shadowRoot.children[0];
+      }
+
+      identifyBindings() {
+        const nodes = new Array();
+        nodes.push(this.shadowRoot);
+
+        while (nodes.length) {
+          const top = nodes.pop();
+
+          if (top.nodeType === this.ELEMENT_NODE) {
+            // Array.from(top.attributes).forEach(({ name, value }) => {
+            //   if (name.startsWith)
+            // });
+
+            if (top.childNodes) {
+              nodes = nodes.concat(Array.from(top.childNodes));
+            }
+          } else if (top.nodeType === this.TEXT_NODE) {
+            top.textContent = compileText(top.textContent, this.getState());
+          }
+        }
       }
     }
   );
@@ -133,7 +156,87 @@ const createState = () => {
     } else {
       state = { ...state, ...newStateOrCallback };
     }
+
+    return state;
   };
 
   return [currentState, stateUpdater];
+};
+
+const hasInterpolation = (element) => {
+  if (element.nodeType !== this.textContent) return false;
+
+  const regex = /\{\{.*?\}\}/gim;
+  return regex.test(element.textContent);
+};
+
+const compileText = (str, data) => {
+  if (!hasInterpolation) return false;
+
+  let resultArray = [];
+
+  for (let pos = 0, length = str.length - 1; pos < length; pos++) {
+    let currentChar = str[pos];
+    let nextChar = str[pos + 1];
+
+    if (currentChar == undefined) {
+      break;
+    }
+
+    // If we don't find an interpolation, keep parsing
+    if (!(currentChar === "{" && nextChar === "{")) {
+      resultArray.push(currentChar);
+      continue;
+    }
+
+    let propertyBuffer = [];
+    // start the property buffer in the inner region of the braces
+    pos += 2;
+
+    // keep moving right and push the characters into the
+    // property buffer
+    do {
+      currentChar = str[pos];
+      nextChar = str[pos + 1];
+
+      // If you find a damaged interpolation
+      // set the position to the nextChar and merge the property buffer
+      // into the results array
+      if (
+        // you find a recurrsive interpolation
+        (currentChar === "{" && nextChar === "{") ||
+        // you find a non matching pairs of closing braces
+        ((currentChar === "}" || nextChar === "}") && currentChar !== nextChar)
+      ) {
+        // flush the property buffer into result array as
+        // the string cannot be interpolated
+        resultArray = resultArray.concat(propertyBuffer);
+        // include the damaged characters
+        resultArray.push(currentChar);
+        resultArray.push(nextChar);
+        // move the pointer to outside the identified region
+        // to continue outer loop
+        pos += 2;
+        break;
+      }
+
+      // yay we found a closing matching braces
+      if (currentChar === "}" && nextChar === "}") {
+        // merge the interpolated result into the compiled string
+        const property = propertyBuffer.join("");
+        resultArray = resultArray.concat(`${data[property]}`.split(""));
+
+        // move the pointer to outside the identified region
+        // to continue outer loop
+        pos += 2;
+        break;
+      }
+
+      // move the cursor forward
+      propertyBuffer.push(currentChar);
+      pos++;
+    } while (currentChar !== "}" && nextChar !== "}");
+  }
+
+  return resultArray.join("");
 };

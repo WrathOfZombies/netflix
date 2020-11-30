@@ -18,5 +18,6 @@ const NetflixApp = (updateState) => ({
 
 Component(
   NetflixApp,
-  `<h1 @click={onClick} @bind="user">Welcome to Netflix app, {{user}}</h1>`
+  `h1 { color: red; }`,
+  `<h1 @click={onClick}>Welcome to Netflix app, {{user}}</h1>`
 );
