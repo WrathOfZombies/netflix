@@ -1,38 +1,39 @@
 import { Component } from "../framework.js";
 
-class LargeObject {
-  constructor() {
-    this.items = new Array(100000).fill(
-      Number.MAX_SAFE_INTEGER * Math.random()
-    );
-  }
-}
-
 class NetflixApp {
   constructor(getState, updateState) {
     this.getState = getState;
     this.updateState = updateState;
   }
 
-  largeObjects = [];
-
-  renderStyle() {
-    return `h1 { color: red; }`;
-  }
-
   render() {
     const { user, time } = this.getState();
-    return `
+
+    const movies = new Array(10)
+      .fill(undefined)
+      .map(
+        (_, index) =>
+          `<movie-card title="The adventures of movie ${
+            index + 1
+          }" @titleclicked="onMovieTitleClicked"></movie-card>`
+      )
+      .join("");
+
+    return [
+      `<div>
       <h1 @click="onClick">Welcome to Netflix app, ${user}</h1>
-      <p>The time now is ${time}</>
-    `;
+      ${movies}
+      <p>The time now is ${time}</></div>`,
+      `h1 { color: red; }`,
+    ];
   }
 
+  onMovieTitleClicked = (event) => {
+    console.log("Movie title clicked", event, this.getState());
+  };
+
   onMount(props) {
-    const interval = setInterval(() => {
-      this.updateState({ time: Date.now() });
-    }, 1000);
-    this.updateState({ user: props.user, time: Date.now(), interval });
+    this.updateState({ user: props.user });
   }
 
   onPropsChanged(newProps, oldProps) {
@@ -40,15 +41,8 @@ class NetflixApp {
     this.updateState({ user: newProps.user });
   }
 
-  onUnmount() {
-    const { interval } = this.getState();
-    clearInterval(interval);
-    console.log("Unmouted");
-  }
-
   onClick = (event) => {
-    this.largeObjects.push(new LargeObject());
-    console.log("Click triggered", event);
+    console.log("Click triggered", this.getState(), event);
   };
 }
 

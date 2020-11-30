@@ -1,6 +1,6 @@
-import { removeChildren, kebabCase } from "./_.js";
+import { kebabCase, memo } from "./_.js";
 
-export const Component = (constructor, style, template) => {
+export const Component = (constructor) => {
   const tag = kebabCase(constructor);
   if (customElements.get(tag)) {
     throw new Error(`A component with the tag: ${tag}, was already defined.`);
@@ -15,30 +15,38 @@ export const Component = (constructor, style, template) => {
         super();
         this.attachShadow({ mode: "open" });
         this.name = tag;
+        this.unmounted = true;
 
         // Create a state and hook up the state updator
         // to the component lifecycle
-        this.component = Reflect.construct(
-          constructor,
-          createState(this.onStateChanged)
-        );
+        this.component = Reflect.construct(constructor, [
+          ...createState(this.onStateChanged),
+          this.notifier,
+        ]);
       }
 
+      notifier = (eventName, data) => {
+        const event = new CustomEvent(eventName, data);
+        this.shadowRoot.host.dispatchEvent(event);
+      };
+
       onStateChanged = (state) => {
+        if (this.unmounted) return;
         console.log("State has changed!", state);
         this.render();
       };
 
       connectedCallback() {
         console.log("Custom square element added to page.");
-        this.component.onMount(parseAttributes(this));
+        this.component.onMount && this.component.onMount(parseAttributes(this));
         this.render();
       }
 
       disconnectedCallback() {
         console.log("Custom square element removed from page.");
+        this.unmounted = true;
         this.removeEventHandlers();
-        this.component.onUnmount();
+        this.component.onUnmount && this.component.onUnmount();
         this.component = null;
       }
 
@@ -50,10 +58,11 @@ export const Component = (constructor, style, template) => {
       attributeChangedCallback(name, oldValue) {
         console.log("Custom square element attributes changed.");
         const newProps = parseAttributes(this);
-        this.component.onProps(newProps, {
-          ...newProps,
-          ...parseAttribute({ name, value: oldValue }),
-        });
+        this.component.onProps &&
+          this.component.onProps(newProps, {
+            ...newProps,
+            ...parseAttribute({ name, value: oldValue }),
+          });
       }
 
       attachEventHandler(target, event, handler) {
@@ -76,22 +85,54 @@ export const Component = (constructor, style, template) => {
       }
 
       render() {
-        const styleTag = document.createElement("style");
-        styleTag.textContent = this.component.renderStyle();
-        const template = this.component.render();
+        const [template, styles] = [this.component.render()].flat();
+        this._renderStyle(styles);
+        this._renderTemplate(template);
+        this.unmounted = false;
+      }
 
-        if (template === this.previousResult) {
-          return;
+      _renderTemplate = memo((template) => {
+        const templateNode = document.createElement("template");
+        templateNode.innerHTML = template;
+        const newDom = templateNode.content.cloneNode(true);
+
+        if (newDom.children && newDom.children.length > 2) {
+          throw new Error("Nodes cannot have multiple children");
         }
 
-        this.previousResult = template;
-        const compliledTemplate = compile(template);
+        // Obviously this sucks big time as we always
+        // construct the dom even if there's very little that changes.
+        // The best way to do this is instead to use an htmlparser
+        // convert the DOM to an AST and then memoize each node
+        // instead.
+        if (this.templateNode && this.templateNode.isEqualNode(newDom)) {
+          // if we cached the last dom and it is exactly the same as the new dom
+          // then we can skip updates
+          return;
+        } else {
+          // else if we already have the shadow dom, just replace it
+          if (this.shadowDom) {
+            this.shadowRoot.replaceChild(newDom, this.shadowRoot.lastChild);
+          } else {
+            this.shadowRoot.appendChild(newDom);
+          }
+          this.shadowDom = newDom;
+          this.processEventBindings();
+        }
+      });
 
-        removeChildren(this.shadowRoot);
-        this.shadowRoot.appendChild(styleTag);
-        this.shadowRoot.appendChild(compliledTemplate);
-        this.processEventBindings();
-      }
+      _renderStyle = memo((css) => {
+        if (!css) {
+          return;
+        }
+        if (this.styleNode) {
+          this.styleNode.textContent = css;
+        } else {
+          const styleTag = document.createElement("style");
+          styleTag.textContent = css;
+          this.styleNode = this.shadowRoot.appendChild(styleTag);
+        }
+      });
 
       processEventBindings() {
         this.removeEventHandlers();
@@ -175,12 +216,6 @@ const parseAttribute = (attr, element) => {
   } catch (error) {
     return { [key]: value };
   }
-};
-
-const compile = (template) => {
-  const templateNode = document.createElement("template");
-  templateNode.innerHTML = template;
-  return templateNode.content.cloneNode(true);
 };
 
 const createState = (onStateChanged) => {
