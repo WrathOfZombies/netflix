@@ -1,6 +1,7 @@
 import { Component } from "../framework/component.js";
 import { data } from "../data.js";
 import { IsInView } from "../utilities/is-in-view.js";
+import { movieCard } from "./movie-card.js";
 
 class MovieCarousel {
   constructor(getState, updateState, _notify, ref) {
@@ -15,25 +16,6 @@ class MovieCarousel {
 
   onUnmount() {
     this.dispose();
-  }
-
-  render() {
-    const { movies } = this.getState();
-    const children = movies
-      .map(
-        ({ title, boxart, id }, index) =>
-          `<img role="grid-cell" class="boxshot hidden" tabindex="0" src="${boxart}" id="movie-${id}" title="${title}" aria-colindex="${
-            index + 1
-          }"/>`
-      )
-      .join("");
-
-    return [
-      `<section class="row-videos" role="row">
-        ${children}
-      </section>`,
-      styles(),
-    ];
   }
 
   onPropsChanged(props) {
@@ -51,9 +33,22 @@ class MovieCarousel {
         hiddenElements.forEach((element) => element.classList.remove("hidden"));
     }
 
-    const videos = new Map(data.videos.map((video) => [video.id, video]));
-    const movies = props.movies.map((movie) => videos.get(movie));
-    this.updateState({ movies });
+    this.updateState({ movies: props.movies });
+  }
+
+  render() {
+    const { movies } = this.getState();
+
+    const children = movies
+      .map((movieId, index) => movieCard({ "movie-id": movieId, index }))
+      .join("");
+
+    return [
+      `<section class="row-videos hidden" role="row">
+        ${children}
+      </section>`,
+      styles(),
+    ];
   }
 }
 
@@ -66,37 +61,33 @@ const styles = () => `
 .row-videos {
   margin: 10px 0;
   display: inline-flex;
-}
-
-/**
- * Video boxshot.
- *
- * The actual image for a video
- */
-.boxshot {
-  width: 253px;
-  height: 142px;
-  margin-right: 3px;
-  position: "relative",
   opacity: 1;
   transition: opacity 1s;
-  -webkit-user-drag: none;
-}
-
-.boxshot:last-child {
-  margin-right: 0;
 }
 
 /**
- * Boxshot Image Visibility.
+ * Video Row Container Visibility.
  *
- * When we have an boxshot, we don't display the image until
+ * When we have an row, we don't display it until
  * it's in the viewport. This CSS class takes care of keeping it hidden.
  *
  * Removing it will set opacity to 1 with a transition.
  */
-.boxshot.hidden {
+.row-videos.hidden {
   opacity: 0;
+}
+
+/**
+ * An example of how a host would add styles to a web component.
+ * Since the movie component isn't aware of where it is executing,
+ * the host needs to determine on how the external styles look.
+ */
+movie-card {
+  margin-right: 3px;
+}
+
+movie-card:last-child {
+  margin-right: 0;
 }
 `;
 

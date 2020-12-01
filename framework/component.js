@@ -40,7 +40,7 @@ export const Component = (constructor, props) => {
         this.shadowRoot.host.dispatchEvent(event);
       };
 
-      onStateChanged = (state) => {
+      onStateChanged = () => {
         if (this.unmounted) return;
         this.render();
       };
@@ -98,7 +98,7 @@ export const Component = (constructor, props) => {
 
       _renderTemplate = memo((template) => {
         const templateNode = document.createElement("template");
-        templateNode.innerHTML = template;
+        templateNode.innerHTML = template || "";
         const newDom = templateNode.content.cloneNode(true);
 
         if (newDom.children && newDom.children.length > 2) {
@@ -131,7 +131,7 @@ export const Component = (constructor, props) => {
           return;
         }
         if (this.styleNode) {
-          this.styleNode.textContent = css;
+          this.styleNode.textContent = css || "";
         } else {
           const styleTag = document.createElement("style");
           styleTag.textContent = css;
@@ -211,7 +211,7 @@ const createState = (onStateChanged) => {
     } else {
       state = { ...state, ...value };
     }
-    onStateChanged(state);
+    onStateChanged();
     return state;
   };
 
