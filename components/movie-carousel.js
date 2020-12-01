@@ -1,5 +1,4 @@
 import { Component } from "../framework/component.js";
-import { data } from "../data.js";
 import { IsInView } from "../utilities/is-in-view.js";
 import { movieCard } from "./movie-card.js";
 
@@ -28,9 +27,8 @@ class MovieCarousel {
     // the transition as the nodes are different. However in an ideal
     // framework, these nodes should remain same by reference
     if (props.isinview) {
-      const hiddenElements = this.ref.querySelectorAll(".hidden");
-      if (hiddenElements && hiddenElements.length)
-        hiddenElements.forEach((element) => element.classList.remove("hidden"));
+      const element = this.ref.querySelector(".hidden");
+      if (element) element.classList.remove("hidden");
     }
 
     this.updateState({ movies: props.movies });

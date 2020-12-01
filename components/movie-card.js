@@ -15,7 +15,7 @@ class MovieCard {
     const { title, boxart, id } = movie;
 
     return [
-      `<img role="grid-cell" class="boxshot" tabindex="0" src="${boxart}" id="movie-${id}" title="${title}" aria-colindex="${index}" @click="onMovieClicked"/>`,
+      `<img loading="lazy" role="grid-cell" class="boxshot" tabindex="0" src="${boxart}" id="movie-${id}" title="${title}" aria-colindex="${index}" @click="onMovieClicked"/>`,
       styles(),
     ];
   }
