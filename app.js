@@ -1,7 +1,8 @@
 import { Component } from "./framework.js";
 import { data } from "./data.js";
-import "./components/movie.js";
 import { first } from "./_.js";
+import { billBoard } from "./components/bill-board.js";
+import { movieCarousel } from "./components/movie-carousel.js";
 
 class NetflixApp {
   constructor(getState, updateState) {
@@ -16,30 +17,35 @@ class NetflixApp {
   render() {
     const { content = [] } = this.getState();
 
-    const movies = content
-      .map(
-        (row, index) =>
-          row.length === 1 ? 
-          `<bill-board movieId="${first(row)}" billboardId="${index}" />`
-          `<movie-card title=" ${title}" @titleclicked="onMovieTitleClicked"></movie-card>`
+    const children = content
+      .map((row, index) =>
+        row.length === 1
+          ? billBoard({ "movie-id": first(row), "billboard-id": index })
+          : movieCarousel({ movies: row })
       )
       .join("");
 
     return [
       `<div class="gallery">
-        <h1 @click="onClick">Netflix</h1>
-        ${movies}
+        <h1>Netflix</h1>
+        ${children}
       </div>`,
-      `
-h1 { color: red; }
-
-.gallery { 
-  width: 1280px;
-  margin: 0 auto;
-}
-      `,
+      style(),
     ];
   }
 }
 
-Component(NetflixApp);
+const style = () =>
+  `h1 { color: red; }
+
+  /**
+   * The gallery container.
+   *
+   * It wraps all the rows and boxshots.
+   */
+  .gallery { 
+    width: 1280px;
+    margin: 0 auto;
+  }`;
+
+export const netflixApp = Component(NetflixApp);

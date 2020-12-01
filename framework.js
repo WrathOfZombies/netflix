@@ -169,6 +169,8 @@ export const Component = (constructor) => {
       }
     }
   );
+
+  return (props) => componentTemplateConstructor(tag, props);
 };
 
 const parseAttributes = (element) =>
@@ -215,6 +217,72 @@ const parseAttribute = (attr, element) => {
     return { [key]: JSON.parse(value) };
   } catch (error) {
     return { [key]: value };
+  }
+};
+
+const componentTemplateConstructor = (tag, props = {}) => {
+  const { children, ...rest } = props;
+
+  const attributes = Array.from(Object.keys(rest)).reduce(
+    (acc, attr) => [
+      ...acc,
+      serializeAttribute({ name: attr, value: props[attr] }),
+    ],
+    []
+  );
+
+  if (children && typeof children !== "string") {
+    throw new Error("Children need to be string");
+  }
+
+  return `<${tag} ${attributes.join(" ")}>${children || ""}</${tag}>`;
+};
+
+const serializeAttribute = (attr) => {
+  if (!attr) {
+    return {};
+  }
+
+  const { name: key, value } = attr;
+
+  // If no attribute value was provided, then we'll assume that it's
+  // to indicate boolean truthy
+  if (value == null) {
+    return `${key}`;
+  }
+
+  // extract the boolean parameters out
+  if (value === false || value === true) {
+    return `${key}="${value ? "true" : "false"}"`;
+  }
+
+  // if the attribute is style then assign the styleMap
+  if (key === "style") {
+    if (!(value instanceof CSSStyleDeclaration)) {
+      throw new Error("Style needs to be a CSSStyleDeclaration");
+    }
+    return `style="${value.cssText}"`;
+  }
+
+  if (Array.isArray(value)) {
+    return `${key}="${JSON.stringify(value)}"`;
+  }
+
+  // parse potential nunmbers
+  const potentialNumericValue = parseFloat(value);
+  if (!isNaN(potentialNumericValue)) {
+    return `${key}="${potentialNumericValue}"`;
+  }
+
+  if (typeof value === "string") {
+    return `${key}="${value}"`;
+  }
+
+  // upon all else, try to serialize as json
+  try {
+    return `${key}="${JSON.stringify(value)}`;
+  } catch (error) {
+    throw new Error("Failed serialization");
   }
 };
 

@@ -7,9 +7,12 @@
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <netflix-app></netflix-app>
     <script type="module">
-      import "./app.js";
+      import { netflixApp } from "./app.js";
+
+      document.addEventListener("DOMContentLoaded", () => {
+        document.body.innerHTML = netflixApp();
+      });
     </script>
   </body>
 </html>
