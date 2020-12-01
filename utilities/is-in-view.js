@@ -7,13 +7,12 @@ export const setupIsInView = () => {
     (entries, observer) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          console.log(entry);
-          entry.target.src = entry.target.dataset.src;
+          entry.target.setAttribute("isInView", "true");
           observer.unobserve(entry.target);
         }
       });
     },
-    { rootMargin: "0px 0px -200px 0px" }
+    { rootMargin: "0px 0px 200px 0px" }
   );
 
   return true;

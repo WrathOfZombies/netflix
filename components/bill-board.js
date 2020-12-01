@@ -1,15 +1,42 @@
 import { data } from "../data.js";
 import { Component } from "../framework/component.js";
+import { IsInView } from "../utilities/is-in-view.js";
 
 class BillBoard {
-  constructor(getState, updateState) {
+  constructor(getState, updateState, _notify, ref) {
     this.getState = getState;
     this.updateState = updateState;
+    this.ref = ref;
   }
 
-  onMount({ "movie-id": movieId, "billboard-id": billBoardId }) {
+  onMount() {
+    this.dispose = IsInView(this.ref.host);
+  }
+
+  onUnmount() {
+    this.dispose();
+  }
+
+  onPropsChanged({
+    "movie-id": movieId,
+    "billboard-id": billBoardId,
+    isinview: isInView,
+  }) {
+    if (movieId == null || billBoardId == null) {
+      return;
+    }
     const billboard = data.billboards.find((item) => item.row === billBoardId);
     const movie = data.videos.find((video) => video.id === movieId);
+
+    // Due to a bug in reconciliation
+    // By using logical state refresh, we wouldnt be able to trigger
+    // the transition as the nodes are different. However in an ideal
+    // framework, these nodes should remain same by reference
+    if (isInView) {
+      const hiddenElement = this.ref.querySelector(".hidden");
+      if (hiddenElement) hiddenElement.classList.remove("hidden");
+    }
+
     this.updateState({ billboard, movie });
   }
 
@@ -37,7 +64,7 @@ class BillBoard {
         <div class="billboard-background" style="background-image: url('${backgroundShort}')">        
         </div>
         <div class="billboard-metadata hidden">
-          <img class="billboard-metadata-logo" title="${title}" src="${logo}"></img>
+          <img loading="lazy" class="billboard-metadata-logo" title="${title}" src="${logo}"></img>
           ${buttonsUI}
         </div>
       </div>`,
@@ -69,7 +96,7 @@ class BillBoard {
         <div class="billboard-background" style="background-image: url('${background}')">        
         </div>
         <div class="billboard-metadata">
-          <img class="billboard-metadata-logo" title="${title}" src="${logo}"></img>
+          <img alt="${title}" class="billboard-metadata-logo" title="${title}" src="${logo}"></img>
           <div class="billboard-metadata-synopsis">${synopsis}</div>
           ${buttonsUI}
         </div>
@@ -194,4 +221,8 @@ const style = () => `
 }
 `;
 
-export const billBoard = Component(BillBoard);
+export const billBoard = Component(BillBoard, [
+  "movie-id",
+  "billboard-id",
+  "isinview",
+]);

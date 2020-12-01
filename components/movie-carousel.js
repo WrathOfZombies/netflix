@@ -1,11 +1,20 @@
 import { Component } from "../framework/component.js";
 import { data } from "../data.js";
+import { IsInView } from "../utilities/is-in-view.js";
 
 class MovieCarousel {
-  constructor(getState, updateState, notify) {
+  constructor(getState, updateState, _notify, ref) {
     this.getState = getState;
     this.updateState = updateState;
-    this.notify = notify;
+    this.ref = ref;
+  }
+
+  onMount() {
+    this.dispose = IsInView(this.ref.host);
+  }
+
+  onUnmount() {
+    this.dispose();
   }
 
   render() {
@@ -13,7 +22,7 @@ class MovieCarousel {
     const children = movies
       .map(
         ({ title, boxart, id }) =>
-          `<img class="boxshot" tabindex="0" src="${boxart}" id="movie-${id}" title="${title}"/>`
+          `<img class="boxshot hidden" tabindex="0" src="${boxart}" id="movie-${id}" title="${title}"/>`
       )
       .join("");
 
@@ -25,7 +34,21 @@ class MovieCarousel {
     ];
   }
 
-  onMount(props) {
+  onPropsChanged(props) {
+    if (!Array.isArray(props.movies)) {
+      return;
+    }
+
+    // Due to a bug in reconciliation
+    // By using logical state refresh, we wouldnt be able to trigger
+    // the transition as the nodes are different. However in an ideal
+    // framework, these nodes should remain same by reference
+    if (props.isinview) {
+      const hiddenElements = this.ref.querySelectorAll(".hidden");
+      if (hiddenElements && hiddenElements.length)
+        hiddenElements.forEach((element) => element.classList.remove("hidden"));
+    }
+
     const videos = new Map(data.videos.map((video) => [video.id, video]));
     const movies = props.movies.map((movie) => videos.get(movie));
     this.updateState({ movies });
@@ -52,11 +75,27 @@ const styles = () => `
   width: 253px;
   height: 142px;
   margin-right: 3px;
+  position: "relative",
+  opacity: 1;
+  transition: opacity 1s;
+  -webkit-user-drag: none;
 }
 
 .boxshot:last-child {
   margin-right: 0;
 }
+
+/**
+ * Boxshot Image Visibility.
+ *
+ * When we have an boxshot, we don't display the image until
+ * it's in the viewport. This CSS class takes care of keeping it hidden.
+ *
+ * Removing it will set opacity to 1 with a transition.
+ */
+.boxshot.hidden {
+  opacity: 0;
+}
 `;
 
-export const movieCarousel = Component(MovieCarousel);
+export const movieCarousel = Component(MovieCarousel, ["movies", "isinview"]);

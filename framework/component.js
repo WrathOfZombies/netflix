@@ -5,7 +5,7 @@ import {
   serializeAttribute,
 } from "./attributes.js";
 
-export const Component = (constructor) => {
+export const Component = (constructor, props) => {
   const tag = kebabCase(constructor);
   if (customElements.get(tag)) {
     throw new Error(`A component with the tag: ${tag}, was already defined.`);
@@ -27,7 +27,12 @@ export const Component = (constructor) => {
         this.component = Reflect.construct(constructor, [
           ...createState(this.onStateChanged),
           this.notifier,
+          this.shadowRoot,
         ]);
+      }
+
+      static get observedAttributes() {
+        return props;
       }
 
       notifier = (eventName, data) => {
@@ -37,7 +42,6 @@ export const Component = (constructor) => {
 
       onStateChanged = (state) => {
         if (this.unmounted) return;
-        console.log("State has changed!", state);
         this.render();
       };
 
@@ -59,8 +63,8 @@ export const Component = (constructor) => {
 
       attributeChangedCallback(name, oldValue) {
         const newProps = parseAttributes(this);
-        this.component.onProps &&
-          this.component.onProps(newProps, {
+        this.component.onPropsChanged &&
+          this.component.onPropsChanged(newProps, {
             ...newProps,
             ...parseAttribute({ name, value: oldValue }),
           });

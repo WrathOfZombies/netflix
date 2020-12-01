@@ -9,8 +9,10 @@
   <body>
     <script type="module">
       import { netflixApp } from "./app.js";
+      import { setupIsInView } from "./utilities/is-in-view.js";
 
       document.addEventListener("DOMContentLoaded", () => {
+        setupIsInView();
         document.body.innerHTML = netflixApp();
       });
     </script>
