@@ -1,4 +1,4 @@
-import { Component } from "../framework.js";
+import { Component } from "../framework/component.js";
 import { data } from "../data.js";
 
 class MovieCarousel {
@@ -13,7 +13,7 @@ class MovieCarousel {
     const children = movies
       .map(
         ({ title, boxart, id }) =>
-          `<img class="boxshot" src="${boxart}" id="movie-${id}" title="${title}"/>`
+          `<img class="boxshot" tabindex="0" src="${boxart}" id="movie-${id}" title="${title}"/>`
       )
       .join("");
 

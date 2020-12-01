@@ -1,6 +1,6 @@
-import { Component } from "./framework.js";
+import { Component } from "./framework/component.js";
 import { data } from "./data.js";
-import { first } from "./_.js";
+import { first } from "./utilities/_.js";
 import { billBoard } from "./components/bill-board.js";
 import { movieCarousel } from "./components/movie-carousel.js";
 
@@ -27,7 +27,6 @@ class NetflixApp {
 
     return [
       `<div class="gallery">
-        <h1>Netflix</h1>
         ${children}
       </div>`,
       style(),

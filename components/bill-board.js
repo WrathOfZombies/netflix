@@ -1,5 +1,5 @@
 import { data } from "../data.js";
-import { Component } from "../framework.js";
+import { Component } from "../framework/component.js";
 
 class BillBoard {
   constructor(getState, updateState) {
@@ -13,20 +13,81 @@ class BillBoard {
     this.updateState({ billboard, movie });
   }
 
-  render() {
+  renderInlineBillBoard() {
     const { billboard, movie } = this.getState();
+    const { title, logo, backgroundShort } = movie;
+    const { buttons } = billboard;
+
+    // potential optmization to load box shot first and then
+    // swap to the actual image
+
+    const buttonsUI = buttons
+      .map(
+        ({ type, text }) =>
+          `<button class="billboard-metadata-button ${
+            type === "play" ? "billboard-metadata-button-play" : ""
+          }" aria-label="${text}" title="${text}">
+        ${text}
+      </button>`
+      )
+      .join("");
 
     return [
-      `<div class="row-billboard${
-        billboard.type === "inline" ? "-inline" : ""
-      }">
-        <div class="billboard-background" style="background-image: url('${
-          movie.background || movie.backgroundShort
-        }')">        
+      `<div class="row-billboard row-billboard-inline" aria-label="${title}">
+        <div class="billboard-background" style="background-image: url('${backgroundShort}')">        
+        </div>
+        <div class="billboard-metadata hidden">
+          <img class="billboard-metadata-logo" title="${title}" src="${logo}"></img>
+          ${buttonsUI}
         </div>
       </div>`,
       style(),
     ];
+  }
+
+  renderHeroBillBoard() {
+    const { billboard, movie } = this.getState();
+    const { title, synopsis, logo, background } = movie;
+    const { buttons } = billboard;
+
+    // potential optmization to load box shot first and then
+    // swap to the actual image
+
+    const buttonsUI = buttons
+      .map(
+        ({ type, text }) =>
+          `<button class="billboard-metadata-button ${
+            type === "play" ? "billboard-metadata-button-play" : ""
+          }" aria-label="${text}" title="${text}">
+        ${text}
+      </button>`
+      )
+      .join("");
+
+    return [
+      `<div class="row-billboard" aria-label="${title}" tabindex="0">
+        <div class="billboard-background" style="background-image: url('${background}')">        
+        </div>
+        <div class="billboard-metadata">
+          <img class="billboard-metadata-logo" title="${title}" src="${logo}"></img>
+          <div class="billboard-metadata-synopsis">${synopsis}</div>
+          ${buttonsUI}
+        </div>
+      </div>`,
+      style(),
+    ];
+  }
+
+  render() {
+    const {
+      billboard: { type },
+    } = this.getState();
+
+    if (type === "inline") {
+      return this.renderInlineBillBoard();
+    }
+
+    return this.renderHeroBillBoard();
   }
 }
 
