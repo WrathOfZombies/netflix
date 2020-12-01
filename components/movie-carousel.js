@@ -21,13 +21,15 @@ class MovieCarousel {
     const { movies } = this.getState();
     const children = movies
       .map(
-        ({ title, boxart, id }) =>
-          `<img class="boxshot hidden" tabindex="0" src="${boxart}" id="movie-${id}" title="${title}"/>`
+        ({ title, boxart, id }, index) =>
+          `<img role="grid-cell" class="boxshot hidden" tabindex="0" src="${boxart}" id="movie-${id}" title="${title}" aria-colindex="${
+            index + 1
+          }"/>`
       )
       .join("");
 
     return [
-      `<section class="row-videos">
+      `<section class="row-videos" role="row">
         ${children}
       </section>`,
       styles(),

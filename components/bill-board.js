@@ -47,7 +47,6 @@ class BillBoard {
 
     // potential optmization to load box shot first and then
     // swap to the actual image
-
     const buttonsUI = buttons
       .map(
         ({ type, text }) =>
@@ -60,11 +59,11 @@ class BillBoard {
       .join("");
 
     return [
-      `<div class="row-billboard row-billboard-inline" aria-label="${title}">
-        <div class="billboard-background" style="background-image: url('${backgroundShort}')">        
+      `<div class="row-billboard row-billboard-inline" aria-label="${title}" tabindex="0" role="row" aria-label="${title}">
+        <div id="billboard-background" class="billboard-background" style="background-image: url('${backgroundShort}')" title="${title}" alt="${title}">        
         </div>
         <div class="billboard-metadata hidden">
-          <img loading="lazy" class="billboard-metadata-logo" title="${title}" src="${logo}"></img>
+          <img loading="lazy" class="billboard-metadata-logo" alt="${title}" src="${logo}"></img>
           ${buttonsUI}
         </div>
       </div>`,
@@ -79,7 +78,6 @@ class BillBoard {
 
     // potential optmization to load box shot first and then
     // swap to the actual image
-
     const buttonsUI = buttons
       .map(
         ({ type, text }) =>
@@ -92,7 +90,7 @@ class BillBoard {
       .join("");
 
     return [
-      `<div class="row-billboard" aria-label="${title}" tabindex="0">
+      `<div class="row-billboard" aria-label="${title}, ${synopsis}" tabindex="0" role="row">
         <div class="billboard-background" style="background-image: url('${background}')">        
         </div>
         <div class="billboard-metadata">

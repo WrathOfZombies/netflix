@@ -26,7 +26,7 @@ class NetflixApp {
       .join("");
 
     return [
-      `<div class="gallery">
+      `<div class="gallery" role="grid">
         ${children}
       </div>`,
       style(),
