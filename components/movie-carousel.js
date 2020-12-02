@@ -58,7 +58,7 @@ const styles = `
  * We stack each row on top of each other in the gallery. Inside we place the image boxshots.
  */
 .row-videos {
-  margin: 10px 0;
+  margin: 1rem 0;
   display: inline-flex;
   opacity: 1;
   transition: opacity 1s;
@@ -82,7 +82,7 @@ const styles = `
  * the host needs to determine on how the external styles look.
  */
 movie-card {
-  margin-right: 3px;
+  margin-right: 0.3rem;
 }
 
 movie-card:last-child {

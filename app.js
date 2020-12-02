@@ -54,15 +54,13 @@ class NetflixApp {
 }
 
 const styles = `
-h1 { color: red; }
-
 /**
  * The gallery container.
  *
  * It wraps all the rows and boxshots.
  */
 .gallery { 
-  width: 1280px;
+  width: 128rem;
   margin: 0 auto;
 }`;
 

@@ -129,8 +129,8 @@ const styles = `
  * The actual image element for the billboard.
  */
 .billboard-background {
-  width: 1280px;
-  height: 720px;
+  width: 128rem;
+  height: 72rem;
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -143,8 +143,8 @@ const styles = `
  */
 .billboard-metadata {
   position: absolute;
-  top: 80px;
-  left: 80px;
+  top: 8rem;
+  left: 8rem;
   opacity: 1;
   transform: translate3d(0, 0, 0);
   transition: opacity 1s, transform 1s;
@@ -160,7 +160,7 @@ const styles = `
  */
 .billboard-metadata.hidden {
   opacity: 0;
-  transform: translate3d(10px, 0, 0);
+  transform: translate3d(1rem, 0, 0);
 }
 
 /**
@@ -174,23 +174,23 @@ const styles = `
  * Synopsis Text
  */
 .billboard-metadata-synopsis {
-  max-width: 500px;
-  font-size: 20px;
-  margin: 20px 0;
+  max-width: 50rem;
+  font-size: 2rem;
+  margin: 2rem 0;
 }
 
 /**
  * Metadata Buttons
  */
 .billboard-metadata-button {
-  font-size: 18px;
+  font-size: 1.8rem;
   font-weight: 700;
   text-transform: uppercase;
-  margin: 20px 15px 0 0;
-  padding: 10px 25px;
+  margin: 2rem 1.5rem 0 0;
+  padding: 1rem 2.5rem;
   color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  border: 0.1rem solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0.1rem 0.2rem rgba(0, 0, 0, 0.3);
   background-color: rgba(0, 0, 0, 0.4);
 }
 
@@ -206,12 +206,12 @@ const styles = `
  * Custom inline billboard
  */
 .row-billboard-inline .billboard-background {
-  height: 192px;
+  height: 19.2rem;
 }
 
 .row-billboard-inline .billboard-metadata {
-  top: 15px;
-  right: 50px;
+  top: 1.5rem;
+  right: 5rem;
   left: auto;
 }
 `;

@@ -44,8 +44,8 @@ const styles = `
  * The actual image for a video
  */
 .boxshot {
-  width: 253px;
-  height: 142px;
+  width: 25.3rem;
+  height: 14.2rem;
   position: "relative",
   -webkit-user-drag: none;
 }
