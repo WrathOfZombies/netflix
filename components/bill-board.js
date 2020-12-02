@@ -1,5 +1,6 @@
-import { queryBillBoard } from "../state/store.js";
 import { Component } from "../framework/component.js";
+import { queryBillBoard } from "../state/store.js";
+
 import { IsInView } from "../utilities/is-in-view.js";
 
 /**

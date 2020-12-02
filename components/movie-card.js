@@ -10,7 +10,7 @@ class MovieCard {
     this.updateState = updateState;
   }
 
-  onPropsChanged({ "movie-id": movieId, index }) {
+  onPropsChanged({ "movie-id": movieId }) {
     if (!movieId) {
       return;
     }
@@ -18,15 +18,13 @@ class MovieCard {
     if (!movie) {
       return;
     }
-    this.updateState({ movie, index });
+    this.updateState({ movie });
   }
 
   render() {
-    const { movie, index } = this.getState();
+    const { movie } = this.getState();
     const { title, boxart, id } = movie;
-    return `<img loading="lazy" role="grid-cell" class="boxshot" tabindex="0" src="${boxart}" id="movie-${id}" title="${title}" aria-colindex="${
-      index + 1
-    }" @click="onMovieClicked"/>`;
+    return `<img loading="lazy" role="grid-cell" class="boxshot" tabindex="0" src="${boxart}" id="movie-${id}" title="${title}" @click="onMovieClicked"/>`;
   }
 
   onMovieClicked = (event) => {
@@ -51,4 +49,4 @@ const styles = `
 }
 `;
 
-export const movieCard = Component(MovieCard, ["movie-id", "index"], styles);
+export const movieCard = Component(MovieCard, ["movie-id"], styles);

@@ -78,4 +78,6 @@ With the above ready, it was only a matter of defining the new components and ge
 1. Progressive loading of information and progressive rendering
 2. If we stick with the custom framework, rendering performance with a better reconciler
 3. Using something like fela instead of repeated styles
-4. Depending upon the scope, a whole lot of stuff that we can get to in the interview
+4. A11Y issues with web components and shadowDOM
+5. Passing around cross cutting concerns
+6. Depending upon the scope, a whole lot of stuff that we can get to in the interview

@@ -1,5 +1,6 @@
 import { Component } from "../framework/component.js";
 import { IsInView } from "../utilities/is-in-view.js";
+
 import { movieCard } from "./movie-card.js";
 
 /**
@@ -41,7 +42,7 @@ class MovieCarousel {
     const { movies } = this.getState();
 
     const children = movies
-      .map((movieId, index) => movieCard({ "movie-id": movieId, index }))
+      .map((movieId) => movieCard({ "movie-id": movieId }))
       .join("");
 
     return `
