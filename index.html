@@ -6,30 +6,14 @@
     <link rel="stylesheet" href="./reset.css" />
     <link rel="stylesheet" href="./style.css" />
   </head>
-  <body>
-    <button id="addme">Add me</button>
-    <button id="removeme">Remove me</button>
-
+  <body role="main">
     <script type="module">
-      import { render } from "./app.js";
-      import { data } from "./data.js";
+      import { netflixApp } from "./app.js";
+      import { setupIsInView } from "./utilities/is-in-view.js";
 
-      document.addEventListener("DOMContentLoaded", (event) => render(data));
-
-      var id = 0;
-
-      document.querySelector("#addme").addEventListener("click", () => {
-        id++;
-        const user = document.createElement("netflix-app");
-        user.setAttribute("user", `User ${id}`);
-        document.body.appendChild(user);
-      });
-
-      document.querySelector("#removeme").addEventListener("click", () => {
-        const user = document.querySelector("netflix-app");
-        if (user) {
-          user.remove();
-        }
+      document.addEventListener("DOMContentLoaded", () => {
+        setupIsInView();
+        document.body.innerHTML = netflixApp();
       });
     </script>
   </body>

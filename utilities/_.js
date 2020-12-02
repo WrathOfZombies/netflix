@@ -1,3 +1,5 @@
+// Why? Cause lodash is great!
+
 export const kebabCase = (componentFn) => {
   let name = componentFn.name;
   if (!name) {
