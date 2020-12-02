@@ -2,6 +2,9 @@ import { Component } from "../framework/component.js";
 import { IsInView } from "../utilities/is-in-view.js";
 import { movieCard } from "./movie-card.js";
 
+/**
+ * Movie carousel component that renders a horizontal row of boxshots
+ */
 class MovieCarousel {
   constructor(getState, updateState, _notify, ref) {
     this.getState = getState;
@@ -41,16 +44,14 @@ class MovieCarousel {
       .map((movieId, index) => movieCard({ "movie-id": movieId, index }))
       .join("");
 
-    return [
-      `<section class="row-videos hidden" role="row">
+    return `
+      <div class="row-videos hidden" role="row">
         ${children}
-      </section>`,
-      styles(),
-    ];
+      </div>`;
   }
 }
 
-const styles = () => `
+const styles = `
 /**
  * Video Row Container.
  *
@@ -89,4 +90,8 @@ movie-card:last-child {
 }
 `;
 
-export const movieCarousel = Component(MovieCarousel, ["movies", "isinview"]);
+export const movieCarousel = Component(
+  MovieCarousel,
+  ["movies", "isinview"],
+  styles
+);

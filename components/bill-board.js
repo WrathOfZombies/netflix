@@ -2,6 +2,9 @@ import { queryBillBoard } from "../state/store.js";
 import { Component } from "../framework/component.js";
 import { IsInView } from "../utilities/is-in-view.js";
 
+/**
+ * Renders a billboard either inline or a non-inline
+ */
 class BillBoard {
   constructor(getState, updateState, _notify, ref) {
     this.getState = getState;
@@ -10,10 +13,12 @@ class BillBoard {
   }
 
   onMount() {
+    // Mark the current host to be tracked via the IsInView library
     this.dispose = IsInView(this.ref.host);
   }
 
   onUnmount() {
+    // Dispose the observer if still running
     this.dispose();
   }
 
@@ -61,17 +66,15 @@ class BillBoard {
 
     // potential optmization to load box shot first and then
     // swap to the actual image
-    return [
-      `<div class="row-billboard row-billboard-inline" aria-label="${title}" tabindex="0" role="row" aria-label="${title}">
+    return `
+      <div class="row-billboard row-billboard-inline" aria-label="${title}" tabindex="0" role="row" aria-label="${title}">
         <div id="billboard-background" class="billboard-background" style="background-image: url('${backgroundShort}')" title="${title}" alt="${title}">        
         </div>
         <div class="billboard-metadata hidden">
           <img loading="lazy" class="billboard-metadata-logo" alt="${title}" src="${logo}"></img>
           ${this.renderButtons()}
         </div>
-      </div>`,
-      style(),
-    ];
+      </div>`;
   }
 
   renderHeroBillBoard() {
@@ -80,8 +83,8 @@ class BillBoard {
 
     // potential optmization to load box shot first and then
     // swap to the actual image
-    return [
-      `<div class="row-billboard" aria-label="${title}, ${synopsis}" tabindex="0" role="row">
+    return `
+      <div class="row-billboard" aria-label="${title}, ${synopsis}" tabindex="0" role="row">
         <div class="billboard-background" style="background-image: url('${background}')">        
         </div>
         <div class="billboard-metadata">
@@ -89,9 +92,7 @@ class BillBoard {
           <div class="billboard-metadata-synopsis">${synopsis}</div>
           ${this.renderButtons()}
         </div>
-      </div>`,
-      style(),
-    ];
+      </div>`;
   }
 
   renderButtons() {
@@ -112,7 +113,7 @@ class BillBoard {
   }
 }
 
-const style = () => `
+const styles = `
 /**
  * Billboard Row Container.
  *
@@ -215,8 +216,8 @@ const style = () => `
 }
 `;
 
-export const billBoard = Component(BillBoard, [
-  "movie-id",
-  "billboard-id",
-  "isinview",
-]);
+export const billBoard = Component(
+  BillBoard,
+  ["movie-id", "billboard-id", "isinview"],
+  styles
+);

@@ -1,6 +1,9 @@
 import { Component } from "../framework/component.js";
 import { queryMovie } from "../state/store.js";
 
+/**
+ * Movie card component
+ */
 class MovieCard {
   constructor(getState, updateState) {
     this.getState = getState;
@@ -21,10 +24,9 @@ class MovieCard {
   render() {
     const { movie, index } = this.getState();
     const { title, boxart, id } = movie;
-    return [
-      `<img loading="lazy" role="grid-cell" class="boxshot" tabindex="0" src="${boxart}" id="movie-${id}" title="${title}" aria-colindex="${index}" @click="onMovieClicked"/>`,
-      styles(),
-    ];
+    return `<img loading="lazy" role="grid-cell" class="boxshot" tabindex="0" src="${boxart}" id="movie-${id}" title="${title}" aria-colindex="${
+      index + 1
+    }" @click="onMovieClicked"/>`;
   }
 
   onMovieClicked = (event) => {
@@ -35,7 +37,7 @@ class MovieCard {
   };
 }
 
-const styles = () => `
+const styles = `
 /**
  * Video boxshot.
  *
@@ -49,4 +51,4 @@ const styles = () => `
 }
 `;
 
-export const movieCard = Component(MovieCard, ["movie-id", "index"]);
+export const movieCard = Component(MovieCard, ["movie-id", "index"], styles);

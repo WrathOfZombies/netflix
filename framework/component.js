@@ -3,9 +3,10 @@ import {
   parseAttributes,
   parseAttribute,
   serializeAttribute,
+  parseEventAttribte,
 } from "./attributes.js";
 
-export const Component = (constructor, props) => {
+export const Component = (constructor, props = [], styles = "") => {
   const tag = kebabCase(constructor);
   if (customElements.get(tag)) {
     throw new Error(`A component with the tag: ${tag}, was already defined.`);
@@ -47,6 +48,7 @@ export const Component = (constructor, props) => {
 
       connectedCallback() {
         this.component.onMount && this.component.onMount(parseAttributes(this));
+        this.renderStyle(styles);
         this.render();
       }
 
@@ -89,14 +91,28 @@ export const Component = (constructor, props) => {
         this.eventTargets = null;
       }
 
-      render() {
-        const [template, styles] = [this.component.render()].flat();
-        this._renderStyle(styles);
-        this._renderTemplate(template);
+      render = memo(() => {
         this.unmounted = false;
-      }
+        const template = this.component.render();
+        this.renderHtml(template);
+      });
 
-      _renderTemplate = memo((template) => {
+      renderStyle = memo((css) => {
+        if (!css) {
+          return;
+        }
+        const styleTag = document.createElement("style");
+        styleTag.textContent = css;
+
+        const existingStyle = this.shadowRoot.firstElementChild;
+        if (existingStyle) {
+          this.shadowRoot.replaceChild(styleTag, existingStyle);
+        } else {
+          this.shadowRoot.appendChild(styleTag);
+        }
+      });
+
+      renderHtml = memo((template) => {
         const templateNode = document.createElement("template");
         templateNode.innerHTML = template || "";
         const newDom = templateNode.content.cloneNode(true);
@@ -116,26 +132,16 @@ export const Component = (constructor, props) => {
           return;
         } else {
           // else if we already have the shadow dom, just replace it
-          if (this.shadowDom) {
+          if (
+            this.shadowRoot.lastChild &&
+            this.shadowRoot.lastChild.nodeName !== "STYLE"
+          ) {
             this.shadowRoot.replaceChild(newDom, this.shadowRoot.lastChild);
           } else {
             this.shadowRoot.appendChild(newDom);
           }
-          this.shadowDom = newDom;
-          this.processEventBindings();
-        }
-      });
 
-      _renderStyle = memo((css) => {
-        if (!css) {
-          return;
-        }
-        if (this.styleNode) {
-          this.styleNode.textContent = css || "";
-        } else {
-          const styleTag = document.createElement("style");
-          styleTag.textContent = css;
-          this.styleNode = this.shadowRoot.appendChild(styleTag);
+          this.processEventBindings();
         }
       });
 
@@ -155,8 +161,8 @@ export const Component = (constructor, props) => {
           if (top.nodeType === this.ELEMENT_NODE) {
             Array.from(top.attributes).forEach(({ name, value }) => {
               // if an attrbute starts with @
-              if (/^@/.test(name)) {
-                const [, event] = name.split("@");
+              const event = parseEventAttribte({ name });
+              if (event) {
                 const handler = this.component[value];
                 if (handler) {
                   this.attachEventHandler(top, event, handler);

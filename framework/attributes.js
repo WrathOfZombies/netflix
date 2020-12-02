@@ -1,3 +1,8 @@
+/**
+ * Given an element, it parses the attributes to make it simple to operate with them
+ * @param {HTMLElement} element The element whose attributes needs parsing
+ * @returns a parsed set of attributes
+ */
 export const parseAttributes = (element) =>
   Array.from(element.attributes).reduce(
     (props, attr) => ({
@@ -7,8 +12,21 @@ export const parseAttributes = (element) =>
     {}
   );
 
+/**
+ * Given an attribute, it helps in parsing it to make it simple to operate with.
+ * @param {Attr} attr The attribute from the attributes list of this element
+ * @param {HTMLElement} element The element whose attributes needs parsing
+ * @returns a parsed attribute
+ */
 export const parseAttribute = (attr, element) => {
   if (!attr) {
+    return {};
+  }
+
+  // if the attribute is an event handler,
+  // let's skip it as we have a dedicated approach for this
+  const isEventAttribute = parseEventAttribte(attr);
+  if (isEventAttribute) {
     return {};
   }
 
@@ -47,6 +65,13 @@ export const parseAttribute = (attr, element) => {
 
 export const serializeAttribute = (attr) => {
   if (!attr) {
+    return {};
+  }
+
+  // if the attribute is an event handler,
+  // let's skip it as we have a dedicated appraoch for this
+  const isEventAttribute = parseEventAttribte(attr);
+  if (isEventAttribute) {
     return {};
   }
 
@@ -91,4 +116,18 @@ export const serializeAttribute = (attr) => {
   } catch (error) {
     throw new Error("Failed serialization");
   }
+};
+
+/**
+ * Given an attribute, if it starts with an '@' we consider to be an event binding.
+ * @param {Attr} attr The attribute from the attributes list of this element
+ * @returns a parsed event attribute
+ */
+export const parseEventAttribte = ({ name }) => {
+  // if an attrbute starts with @
+  if (/^@/.test(name)) {
+    const [, event] = name.split("@");
+    return event;
+  }
+  return undefined;
 };
