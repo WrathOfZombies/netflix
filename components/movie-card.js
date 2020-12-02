@@ -1,5 +1,5 @@
 import { Component } from "../framework/component.js";
-import { data } from "../data.js";
+import { queryMovie } from "../state/store.js";
 
 class MovieCard {
   constructor(getState, updateState) {
@@ -7,34 +7,30 @@ class MovieCard {
     this.updateState = updateState;
   }
 
+  onPropsChanged({ "movie-id": movieId, index }) {
+    if (!movieId) {
+      return;
+    }
+    const movie = queryMovie(movieId);
+    if (!movie) {
+      return;
+    }
+    this.updateState({ movie, index });
+  }
+
   render() {
     const { movie, index } = this.getState();
-    if (!movie) {
-      return [];
-    }
     const { title, boxart, id } = movie;
-
     return [
       `<img loading="lazy" role="grid-cell" class="boxshot" tabindex="0" src="${boxart}" id="movie-${id}" title="${title}" aria-colindex="${index}" @click="onMovieClicked"/>`,
       styles(),
     ];
   }
 
-  onPropsChanged({ "movie-id": movieId, index }) {
-    if (!movieId) {
-      return;
-    }
-
-    const videos = new Map(data.videos.map((video) => [video.id, video]));
-    const movie = videos.get(movieId);
-    this.updateState({ movie, index });
-  }
-
   onMovieClicked = (event) => {
     const {
       movie: { title },
     } = this.getState();
-
     console.log(`This ${title} was selected`, event);
   };
 }

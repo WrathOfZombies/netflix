@@ -1,5 +1,5 @@
 import { Component } from "./framework/component.js";
-import { data } from "./data.js";
+import { queryIsBillBoard, queryMoviesList } from "./state/store.js";
 import { first } from "./utilities/_.js";
 import { billBoard } from "./components/bill-board.js";
 import { movieCarousel } from "./components/movie-carousel.js";
@@ -11,15 +11,20 @@ class NetflixApp {
   }
 
   onMount() {
-    this.updateState({ content: data.rows });
+    const moviesList = queryMoviesList();
+    if (!moviesList || !moviesList.length) {
+      return;
+    }
+
+    this.updateState({ moviesList });
   }
 
   render() {
-    const { content = [] } = this.getState();
+    const { moviesList } = this.getState();
 
-    const children = content
+    const children = moviesList
       .map((row, index) =>
-        row.length === 1
+        queryIsBillBoard(index)
           ? billBoard({ "movie-id": first(row), "billboard-id": index })
           : movieCarousel({ movies: row })
       )
