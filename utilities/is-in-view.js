@@ -1,3 +1,9 @@
+/**
+ * Sets up a global intersection observer to that we can detect
+ * if something is in the viewport in an efficient manner. I know
+ * global = EWW but lack of a proper state management, forced me to
+ * go down this path.
+ */
 export const setupIsInView = () => {
   if (window.__isInView__) {
     return false;
@@ -18,6 +24,13 @@ export const setupIsInView = () => {
   return true;
 };
 
+/**
+ * Exports a function that updates the property on the
+ * target when it is in view. Again "update property" = EWW
+ * but the lack of a proper reconciler forced me to go down this
+ * path.
+ * @param {HTMLElement} target The node to be observed
+ */
 export const IsInView = (target) => {
   if (
     !window.__isInView__ ||
